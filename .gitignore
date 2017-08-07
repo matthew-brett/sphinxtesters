@@ -1,0 +1,10 @@
+*.pyc
+*~
+__pycache__/
+build/
+.coverage
+dist/
+*.egg-info/
+MANIFEST
+.ipynb_checkpoints/
+htmlcov/
