@@ -53,6 +53,3 @@
 .. |--| unicode:: U+2013   .. en dash
 .. |---| unicode:: U+2014  .. em dash, trimming surrounding whitespace
    :trim:
-.. |nbplot-documentation| replace:: :ref:`nbplots-documentation`
-.. |code-links-documentation| replace:: :ref:`code-links-documentation`
-.. |worked-example| replace:: :ref:`worked-example`

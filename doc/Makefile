@@ -49,10 +49,7 @@ clean:
 	rm -rf $(BUILDDIR)/*
 
 .PHONY: html
-html: example html-only
-
-.PHONY: html-only
-html-only:
+html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(BUILDDIR)/html."
@@ -226,14 +223,6 @@ dummy:
 	$(SPHINXBUILD) -b dummy $(ALLSPHINXOPTS) $(BUILDDIR)/dummy
 	@echo
 	@echo "Build finished. Dummy builder generates no files."
-
-example: example_notebook.ipynb
-	mkdir -p $(BUILDDIR)/html
-	jupyter nbconvert --to html example_notebook.ipynb --stdout > \
-		$(BUILDDIR)/html/example_notebook.html
-	sphinxtesters example_notebook.ipynb > converted_example.rst
-	cp converted_example.rst converted_plus_notebooks.rst
-	echo '.. code-links::' >> converted_plus_notebooks.rst
 
 github: html
 	ghp-import -n $(BUILDDIR)/html/

@@ -2,6 +2,8 @@
 Sphinxtesters - utilities for testing Sphinx extensions
 #######################################################
 
+.. shared-text-body
+
 ************
 Installation
 ************
@@ -9,22 +11,6 @@ Installation
 ::
 
     pip install sphinxtesters
-
-You will need Pandoc_ installed and available as the ``pandoc`` command.
-
-To install Pandoc on OSX, we recommend homebrew_::
-
-    brew install pandoc
-
-*************
-Configuration
-*************
-
-Add the following to your Sphinx ``conf.py`` file::
-
-    extensions = ["sphinxtesters"]
-
-See |nbplot-documentation| for the various ``conf.py`` configuration settings.
 
 ****
 Code
