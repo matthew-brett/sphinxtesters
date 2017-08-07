@@ -1,6 +1,6 @@
 """ Tests for proj1 build using sphinx extensions """
 
-from os.path import (join as pjoin, dirname, isdir, exists)
+from os.path import (join as pjoin, dirname, isdir, exists, splitext)
 
 from sphinxtesters import ModifiedPageBuilder
 
@@ -24,7 +24,7 @@ class TestProj1(Proj1Builder):
     def test_basic_build(self):
         assert_true(isdir(self.out_dir))
         assert_true(isdir(self.doctree_dir))
-        doctree = self.get_doctree('a_page')
+        doctree = self.get_doctree(splitext(self.default_page)[0])
         assert_equal(len(doctree.document), 1)
         doctree_str = self.doctree2str(doctree)
         expected = (
@@ -33,3 +33,4 @@ class TestProj1(Proj1Builder):
             '<paragraph>More text.</paragraph>\n'
             '<paragraph>Text is endless.</paragraph>')
         assert_equal(doctree_str, expected)
+        assert_true(exists(pjoin(self.doctree_dir, 'index.doctree')))
