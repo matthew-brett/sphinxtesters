@@ -1,0 +1,9 @@
+include versioneer.py
+include sphinxtesters/_version.py
+include README.rst
+include LICENSE
+include *requirements.txt
+recursive-include sphinxtesters/tests/proj1 *
+recursive-include sphinxtesters/tests/data *
+recursive-include sphinxtesters/tests/rst_md_files *
+recursive-include sphinxtesters/tests/otherpages *
