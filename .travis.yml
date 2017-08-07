@@ -1,0 +1,119 @@
+language: python
+
+# Run jobs on container-based infrastructure, can be overridden per job
+sudo: false
+
+cache:
+  directories:
+    - $HOME/.cache/pip
+
+env:
+    global:
+        - DEPENDS="sphinx"
+        - PKG_NAME=sphinxtesters
+        - INSTALL_TYPE="pip"
+        # URL for extra wheel repo
+        - EXTRA_WHEELS="https://5cf40426d9f06eb7461d-6fe47d9331aba7cd62fc36c7196769e4.ssl.cf2.rackcdn.com"
+
+python:
+    - 3.4
+    - 3.5
+    - 3.6
+
+matrix:
+  include:
+    - python: 2.7
+      env:
+        - COVERAGE=1
+        - DOCTESTS=1
+    # Absolute minimum dependencies
+    # Check also requirements.txt
+    - python: 2.7
+      env:
+          - DEPENDS="sphinx==1.4"
+    - python: 2.7
+      env:
+          - DEPENDS="sphinx==1.4.3"
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=setup
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=sdist
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=wheel
+    - python: 2.7
+      env:
+        - INSTALL_TYPE=requirements
+        - DEPENDS=
+    - python: 3.5
+      env:
+        - BUILD_DOC=1
+    # Python 3.3 can't use latest sphinx or numpy
+    - python: 3.3
+      env:
+        - DEPENDS="sphinx==1.4.3"
+    # Test pre-release versions of everything
+    - python: 3.5
+      env:
+        - EXTRA_PIP_FLAGS="--pre"
+
+before_install:
+    - pip install -U virtualenv
+    - virtualenv --python=python venv
+    - source venv/bin/activate
+    - python -m pip install --upgrade pip wheel
+    - python --version  # just to check
+    - pip install nose mock # always
+    - pip install $EXTRA_PIP_FLAGS -f $EXTRA_WHEELS $DEPENDS
+    - if [ -n "$COVERAGE" ]; then
+      pip install coverage;
+      pip install codecov;
+      fi
+
+install:
+    - |
+      if [ "$INSTALL_TYPE" == "pip" ]; then
+          pip install .
+      elif [ "$INSTALL_TYPE" == "setup" ]; then
+          python setup.py install
+      elif [ "$INSTALL_TYPE" == "sdist" ]; then
+        python setup.py egg_info  # check egg_info while we're here
+        python setup.py sdist
+        pip install -f $EXTRA_WHEELS dist/*.tar.gz
+      elif [ "$INSTALL_TYPE" == "wheel" ]; then
+        pip install wheel
+        python setup.py bdist_wheel
+        pip install -f $EXTRA_WHEELS dist/*.whl
+      elif [ "$INSTALL_TYPE" == "requirements" ]; then
+        pip install -f $EXTRA_WHEELS -r requirements.txt
+        python setup.py install
+      fi
+
+script:
+    - |
+      if [ -n "$BUILD_DOC" ]; then
+        # Build documentation
+        pip install -r doc-requirements.txt
+        cd doc
+        # Make warnings function as errors on Sphinx build
+        export SPHINXOPTS='-W'
+        make html
+        make doctest
+      else
+        # Change into an innocuous directory and find tests from installation
+        mkdir for_testing
+        cd for_testing
+        if [ -n "$COVERAGE" ]; then
+          cp ../.coveragerc .;
+          COVER_ARGS="--with-coverage --cover-package $PKG_NAME";
+        fi
+        if [ -n "$DOCTESTS" ]; then
+          DOCTEST_ARGS="--with-doctest";
+        fi
+        nosetests $COVER_ARGS $DOCTEST_ARGS $PKG_NAME
+      fi
+
+after_success:
+    - if [ -n "$COVERAGE" ]; then codecov; fi

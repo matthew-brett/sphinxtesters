@@ -1,0 +1,6 @@
+[run]
+branch = True
+source = sphinxtesters
+include = */sphinxtesters/*
+omit =
+    sphinxtesters/_version.py
