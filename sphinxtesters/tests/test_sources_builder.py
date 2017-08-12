@@ -1,13 +1,11 @@
 """ Tests for SourcesBuilder utility
 """
 
-from os.path import (join as pjoin, dirname, isdir, exists, splitext)
+from os.path import (join as pjoin, dirname, isdir, exists)
 
 from sphinxtesters import SourcesBuilder
 
 from nose.tools import assert_true, assert_equal
-
-HERE = dirname(__file__)
 
 A_PAGE = """\
 #########

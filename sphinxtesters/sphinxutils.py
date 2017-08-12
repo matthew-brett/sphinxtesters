@@ -84,6 +84,8 @@ class TempApp(TestApp):
         String containing ReST to build.
     conf_text : str, optional
         Text for configuration ``conf.py`` file.
+    buildername : str, optional
+        Name of default builder.
     status : file-like object or None, optional
         File-like object to which to write build status messages, or None for
         no build status messages.
@@ -91,7 +93,7 @@ class TempApp(TestApp):
         If True, raise an error for warning during the Sphinx build.
     """
 
-    def __init__(self, rst_text, conf_text='', buildername='markdown',
+    def __init__(self, rst_text, conf_text='', buildername='html',
                  status=sys.stdout, warningiserror=True):
         self.tmp_dir = tmp_dir = mkdtemp()
         with open(pjoin(tmp_dir, 'conf.py'), 'wt') as fobj:
@@ -109,12 +111,22 @@ class TempApp(TestApp):
                              status=status,
                              warningiserror=warningiserror)
 
-    def __del__(self):
+
+    def cleanup(self):
         shutil.rmtree(self.tmp_dir)
+        self.tmp_dir = None
+
+    def __del__(self):
+        super(TempApp, self).__del__()
+        self.cleanup()
 
 
 class PageBuilder(object):
-    """ Class to build sphinx pages in temporary directory """
+    """ Nose test class to build sphinx pages in temporary directory
+
+    When child class has a name Nose recognizes as a test class, Nose will call
+    ``setup_class``, which will build
+    """
 
     # If True, assert that the build raised an error
     should_error = False
@@ -162,11 +174,16 @@ class PageBuilder(object):
 
     @classmethod
     def set_page_source(cls):
-        """ Set directory containing page sources
+        """ Set directory containing page sources, maybe modify source
         """
         cls.page_source = pjoin(cls.build_path, 'source')
         os.mkdir(cls.page_source)
         cls.modify_source()
+
+    @classmethod
+    def modify_source(cls):
+        """ Override to modify sources before initial build
+        """
 
     def get_doctree(self, name):
         """ Return doctree given by `name` from pickle in doctree file """
@@ -268,10 +285,6 @@ class ModifiedPageBuilder(PageBuilder):
         cls.modify_source()
 
     @classmethod
-    def modify_source(cls):
-        """ Subclass this class method to modify the build sources """
-
-    @classmethod
     def append_conf(cls, string):
         """ Append stuff to the conf.py file """
         with open(pjoin(cls.page_source, 'conf.py'), 'a') as fobj:
@@ -281,7 +294,7 @@ class ModifiedPageBuilder(PageBuilder):
     def replace_page(cls, file_like):
         """ Replace default page with contents of `file_like`
         """
-        out_fname = pjoin(cls.page_source, cls.default_page)
+        out_fname = pjoin(cls.page_source, cls.default_page + '.rst')
         if hasattr(file_like, 'read'):
             contents = file_like.read()
             with open(out_fname, 'wt') as fobj:
@@ -366,7 +379,8 @@ class Converter(object):
         doctree : node
             document node.
         app : object
-            Sphinx application object
+            Sphinx application object.  This will need to be cleaned up
+            (``app.cleanup()``) after use.
         """
         app = self._make_app(rst_text)
         out_fname = pjoin(app.tmp_dir, 'contents.rst')
@@ -414,4 +428,6 @@ class Converter(object):
             Text in output format
         """
         doctree, app = self._build_rst(rst_text, resolve)
-        return self.from_doctree(doctree, app.builder)
+        res = self.from_doctree(doctree, app.builder)
+        app.cleanup()
+        return res
