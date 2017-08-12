@@ -11,7 +11,6 @@ from tempfile import mkdtemp
 import pickle
 
 from docutils import nodes
-from docutils.io import Output
 
 from docutils.parsers.rst import directives, roles
 
