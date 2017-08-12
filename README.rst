@@ -4,6 +4,13 @@ Sphinxtesters - utilities for testing Sphinx extensions
 
 .. shared-text-body
 
+**********
+Quickstart
+**********
+
+See the tests for examples of using Sphinxtesters for testing builds of Sphinx
+projects.
+
 ************
 Installation
 ************
