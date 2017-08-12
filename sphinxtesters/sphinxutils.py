@@ -305,6 +305,14 @@ class ModifiedPageBuilder(PageBuilder):
     @classmethod
     def add_page(cls, file_like, out_name):
         """ Add another page from `file_like` with name `out_name`
+
+        Parameters
+        ----------
+        file_like : file-like or str
+            File-like object or filename.
+        out_name : str
+            Base of filename for output.  We will prepend the
+            ``cls.page_source`` path, and add a ``.rst`` suffix.
         """
         out_fname = pjoin(cls.page_source, out_name + '.rst')
         if hasattr(file_like, 'read'):
@@ -315,119 +323,3 @@ class ModifiedPageBuilder(PageBuilder):
             shutil.copyfile(file_like, out_fname)
         with open(pjoin(cls.page_source, 'index.rst'), 'a') as fobj:
             fobj.write("\n\n.. toctree::\n\n    {0}\n\n".format(out_name))
-
-
-class UnicodeOutput(Output):
-    """ Don't do anything to the string; just return it.
-    """
-
-    default_destination_path = '<string>'
-
-    def write(self, data):
-        """ Store `data` in `self.destination`, and return it."""
-        self.destination = data
-        return data
-
-
-class Converter(object):
-    """ Class to convert from ReST or doctree to output format
-    """
-
-    default_conf = ''
-
-    def __init__(self, buildername='html', conf_txt=None,
-                 status=sys.stdout, warningiserror=True):
-        """ Build ReST text in string `rst_text` into doctree.
-
-        Parameters
-        ----------
-        buildername : str, optional
-            Builder name.
-        conf_txt : None or str
-            Text for ``conf.py`` file controlling Sphinx build.
-        status : file-like object or None, optional
-            File-like object to which to write build status messages, or None
-            for no build status messages.
-        warningiserror : {True, False}, optional
-            if True, raise an error for warning during the Sphinx build.
-        """
-        self.buildername = buildername
-        self.conf_txt = conf_txt if not conf_txt is None else self.default_conf
-        self.status = status
-        self.warningiserror = warningiserror
-
-    def _make_app(self, rst_text):
-        """ Make, return Sphinx application instance for input ReST text.
-        """
-        return TempApp(rst_text,
-                       self.conf_txt, status=self.status,
-                       warningiserror=self.warningiserror,
-                       buildername=self.buildername)
-
-    def _build_rst(self, rst_text, resolve=True):
-        """ Build ReST text in string `rst_text` into doctree.
-
-        Parameters
-        ----------
-        rst_text : str
-            string containing ReST to build.
-        resolve : {True, False}, optional
-            Whether to resolve references before returning doctree.
-
-        Returns
-        -------
-        doctree : node
-            document node.
-        app : object
-            Sphinx application object.  This will need to be cleaned up
-            (``app.cleanup()``) after use.
-        """
-        app = self._make_app(rst_text)
-        out_fname = pjoin(app.tmp_dir, 'contents.rst')
-        with open(out_fname, 'wt') as fobj:
-            fobj.write(rst_text)
-        # Force build of everything
-        app.build(True, [])
-        if resolve:
-            dt = app.env.get_and_resolve_doctree('contents', app.builder)
-        else:
-            dt = app.env.get_doctree('contents')
-        return dt, app
-
-    def from_doctree(self, doctree, builder):
-        """ Convert doctree `doctree` to output format
-
-        Parameters
-        ----------
-        doctree : node
-            Document node.
-        builder : object
-            Sphinx builder object.
-
-        Returns
-        ------
-        output : str
-            Representation in output format
-        """
-        builder.prepare_writing(['contents'])
-        return builder.writer.write(doctree, UnicodeOutput())
-
-    def from_rst(self, rst_text, resolve=True):
-        """ Build Sphinx formatted ReST text `rst_text` into output format
-
-        Parameters
-        ----------
-        rst_text : str
-            string containing ReST to build.
-        resolve : {True, False}, optional
-            Whether to resolve references before returning doctree.
-
-        Returns
-        -------
-        output : str
-            Text in output format
-        """
-        doctree, app = self._build_rst(rst_text, resolve)
-        res = self.from_doctree(doctree, app.builder)
-        app.cleanup()
-        return res

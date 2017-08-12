@@ -1,8 +1,7 @@
 """ Sphinxtesters package
 """
 
-from .sphinxutils import (Converter, UnicodeOutput, SourcesBuilder,
-                          ModifiedPageBuilder)
+from .sphinxutils import (SourcesBuilder, ModifiedPageBuilder)
 
 from ._version import get_versions
 __version__ = get_versions()['version']
