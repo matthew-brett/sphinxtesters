@@ -29,7 +29,7 @@ Released under the BSD two-clause license - see the file ``LICENSE`` in the
 source distribution.
 
 `travis-ci <https://travis-ci.org/matthew-brett/sphinxtesters>`_ kindly tests the
-code automatically under Python versions 2.7, and 3.3 through 3.5.
+code automatically under Python versions 2.7, and 3.3 through 3.6.
 
 The latest released version is at https://pypi.python.org/pypi/sphinxtesters
 
@@ -38,9 +38,9 @@ Tests
 *****
 
 * Install ``sphinxtesters``
-* Install the nose_ testing framework and the ``mock`` module::
+* Install the nose_ testing framework::
 
-    pip install nose mock
+    pip install nose
 
 * Run the tests with::
 
@@ -54,7 +54,7 @@ Please put up issues on the `sphinxtesters issue tracker`_.
 
 .. standalone-references
 
-.. |sphinxtesters-documentation| replace:: `nbplots documentation`_
+.. |sphinxtesters-documentation| replace:: `sphinxtesters documentation`_
 .. _sphinxtesters documentation:
     https://matthew-brett.github.com/sphinxtesters/sphinxtesters.html
 .. _documentation: https://matthew-brett.github.com/sphinxtesters

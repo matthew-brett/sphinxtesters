@@ -55,7 +55,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = 'sphinxtesters'
-copyright = '2016-2017, Matthew Brett'
+copyright = '2017, Matthew Brett'
 author = 'Matthew Brett'
 
 # The version info for the project you're documenting, acts as replacement for

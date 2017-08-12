@@ -49,7 +49,6 @@ Releasing sphinxtesters
 
 * Clean::
 
-    make distclean
     # Check no files outside version control that you want to keep
     git status
     # Nuke
@@ -59,7 +58,7 @@ Releasing sphinxtesters
 
     python setup.py sdist --formats=zip
     # -s flag to sign the release
-    twine upload -r warehouse -s dist/sphinxtesters*zip
+    twine upload -s dist/sphinxtesters*zip
 
 * Upload the release commit and tag to github::
 
