@@ -112,11 +112,17 @@ class TempApp(TestApp):
 
 
     def cleanup(self):
+        if self.tmp_dir is None:
+            return
         shutil.rmtree(self.tmp_dir)
         self.tmp_dir = None
 
     def __del__(self):
-        super(TempApp, self).__del__()
+        # Sphinx application may or may not have a __del__ method.
+        try:
+            super(TempApp, self).__del__()
+        except AttributeError:
+            pass
         self.cleanup()
 
 
