@@ -1,0 +1,19 @@
+########################
+Sphinxtestsers Changelog
+########################
+
+*****
+0.1.1
+*****
+
+Bugfix release.
+
+* Improve error handling
+
+***
+0.1
+***
+
+First release.
+
+.. vim: ft=rst
