@@ -3,6 +3,8 @@
 
 from os.path import (dirname, join as pjoin, isdir, isfile)
 
+from sphinx.errors import ConfigError
+
 from sphinxtesters.sphinxutils import PageBuilder
 
 from nose.tools import assert_true, assert_equal, assert_raises
@@ -42,4 +44,5 @@ def test_bad_pagebuilder():
         def set_page_source(cls):
             cls.page_source = HERE
 
-    assert_raises(IOError, TestBadPageBuilder.setup_class)
+    # ConfigError as of Sphinx 1.6.6
+    assert_raises((IOError, ConfigError), TestBadPageBuilder.setup_class)
