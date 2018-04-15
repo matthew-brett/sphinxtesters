@@ -66,7 +66,9 @@ before_install:
     - python -m pip install --upgrade pip wheel
     - python --version  # just to check
     - pip install nose mock # always
-    - pip install $EXTRA_PIP_FLAGS -f $EXTRA_WHEELS $DEPENDS
+    - if [ -n "$DEPENDS" ]; then
+      pip install $EXTRA_PIP_FLAGS -f $EXTRA_WHEELS $DEPENDS;
+      fi
     - if [ -n "$COVERAGE" ]; then
       pip install coverage;
       pip install codecov;
