@@ -24,8 +24,8 @@ matrix:
   include:
     - python: 2.7
       env:
-        - COVERAGE=1
-        - DOCTESTS=1
+        - COVER_ARGS="--cov=$PKG_NAME"
+        - DOCTEST_ARGS="--doctest-modules"
     # Absolute minimum dependencies
     # Check also requirements.txt
     - python: 2.7
@@ -61,13 +61,10 @@ before_install:
     - source venv/bin/activate
     - python -m pip install --upgrade pip wheel
     - python --version  # just to check
-    - pip install nose mock # always
-    - if [ -n "$DEPENDS" ]; then
-      pip install $EXTRA_PIP_FLAGS -f $EXTRA_WHEELS $DEPENDS;
-      fi
-    - if [ -n "$COVERAGE" ]; then
-      pip install coverage;
-      pip install codecov;
+    - pip install pytest mock # always
+    - |
+      if [ -n "$DEPENDS" ]; then
+        pip install $EXTRA_PIP_FLAGS -f $EXTRA_WHEELS $DEPENDS
       fi
 
 install:
@@ -103,14 +100,12 @@ script:
         # Change into an innocuous directory and find tests from installation
         mkdir for_testing
         cd for_testing
-        if [ -n "$COVERAGE" ]; then
-          cp ../.coveragerc .;
-          COVER_ARGS="--with-coverage --cover-package $PKG_NAME";
+        if [ -n "$COVER_ARGS" ]; then
+           cp ../.coveragerc .
+           pip install pytest-cov
+           pip install codecov
         fi
-        if [ -n "$DOCTESTS" ]; then
-          DOCTEST_ARGS="--with-doctest";
-        fi
-        nosetests $COVER_ARGS $DOCTEST_ARGS $PKG_NAME
+        pytest $COVER_ARGS $DOCTEST_ARGS --pyargs $PKG_NAME
       fi
 
 after_success:

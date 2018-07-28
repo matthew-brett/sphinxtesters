@@ -1,11 +1,9 @@
 """ Tests for SourcesBuilder utility
 """
 
-from os.path import (join as pjoin, dirname, isdir, exists)
+from os.path import (join as pjoin, isdir, exists)
 
 from sphinxtesters import SourcesBuilder
-
-from nose.tools import assert_true, assert_equal
 
 A_PAGE = """\
 #########
@@ -41,18 +39,18 @@ class CheckSources(SourcesBuilder):
     """
 
     def test_structure(self):
-        assert_true(isdir(self.out_dir))
-        assert_true(isdir(self.doctree_dir))
-        assert_true(exists(pjoin(self.doctree_dir, 'contents.doctree')))
+        assert isdir(self.out_dir)
+        assert isdir(self.doctree_dir)
+        assert exists(pjoin(self.doctree_dir, 'contents.doctree'))
         for page_name in self.rst_sources:
-            assert_true(exists(pjoin(self.doctree_dir,
-                                     page_name + '.doctree')))
+            assert exists(pjoin(self.doctree_dir,
+                                page_name + '.doctree'))
 
     def check_page(self, page_name, expected_doctree):
         doctree = self.get_doctree(page_name)
-        assert_equal(len(doctree.document), 1)
+        assert len(doctree.document) == 1
         doctree_str = self.doctree2str(doctree)
-        assert_equal(doctree_str, expected_doctree)
+        assert doctree_str == expected_doctree
 
 
 class TestAPage(CheckSources):

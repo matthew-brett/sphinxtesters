@@ -36,6 +36,7 @@
 .. _setuptools: http://pypi.python.org/pypi/setuptools
 .. _matplotlib: http://matplotlib.org/
 .. _nose: http://readthedocs.org/docs/nose/en/latest
+.. _pytest: https://pytest.org
 .. _mock: https://github.com/testing-cabal/mock
 .. _pip: http://pypi.python.org/pypi/pip
 .. _PEP8:

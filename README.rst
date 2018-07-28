@@ -38,13 +38,13 @@ Tests
 *****
 
 * Install ``sphinxtesters``
-* Install the nose_ testing framework::
+* Install the pytest_ testing framework::
 
-    pip install nose
+    pip install pytest
 
 * Run the tests with::
 
-    nosetests sphinxtesters
+    pytest sphinxtesters
 
 *******
 Support
@@ -64,5 +64,5 @@ Please put up issues on the `sphinxtesters issue tracker`_.
 .. _sphinx: http://sphinx-doc.org
 .. _rest: http://docutils.sourceforge.net/rst.html
 .. _sphinxtesters issue tracker: https://github.com/matthew-brett/sphinxtesters/issues
-.. _nose: http://readthedocs.org/docs/nose/en/latest
+.. _pytest: https://pytest.org
 .. _mock: https://github.com/testing-cabal/mock

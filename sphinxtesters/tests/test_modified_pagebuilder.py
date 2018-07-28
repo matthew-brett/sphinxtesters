@@ -7,7 +7,7 @@ from os.path import dirname, join as pjoin
 from sphinxtesters.sphinxutils import ModifiedPageBuilder
 from sphinxtesters.tmpdirs import in_dtemp
 
-from nose.tools import assert_equal, assert_raises
+import pytest
 
 HERE = dirname(__file__)
 PROJ1 = pjoin(HERE, 'proj1')
@@ -43,7 +43,7 @@ Compelling text
         expected = (
             '<title>Fancy title</title>\n'
             '<paragraph>Compelling text</paragraph>')
-        assert_equal(doctree_str, expected)
+        assert doctree_str == expected
 
 
 class TestFModifiedPageBuilder(TestModifiedPageBuilder):
@@ -70,7 +70,8 @@ Fancy title
 :ref:`not-a-target`
 """
 
-    assert_raises(RuntimeError, TestBadPageBuilder.setup_class)
+    with pytest.raises(RuntimeError):
+        TestBadPageBuilder.setup_class()
 
 
 class TestAppendConf(TestModifiedPageBuilder):
@@ -86,7 +87,7 @@ class TestAppendConf(TestModifiedPageBuilder):
             before_contents = fobj.read()
         with open(pjoin(self.page_source, 'conf.py'), 'rt') as fobj:
             after_contents = fobj.read()
-        assert_equal(after_contents, before_contents + '# Spurious comment')
+        assert (after_contents == before_contents + '# Spurious comment')
 
 
 class TestAddPage(TestModifiedPageBuilder):
@@ -105,13 +106,13 @@ class TestAddPage(TestModifiedPageBuilder):
             '<paragraph>Some text.</paragraph>\n'
             '<paragraph>More text.</paragraph>\n'
             '<paragraph>Text is endless.</paragraph>')
-        assert_equal(doctree_str, expected)
+        assert doctree_str == expected
         expected = (
             '<title>Fancy title</title>\n'
             '<paragraph>Compelling text</paragraph>')
         doctree = self.get_doctree('b_page')
         doctree_str = self.doctree2str(doctree)
-        assert_equal(doctree_str, expected)
+        assert doctree_str == expected
 
 
 class TestAddFPage(TestAddPage):
