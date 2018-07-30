@@ -33,6 +33,12 @@ B_DOCTREE = """\
 <title>Another section</title>
 <paragraph>Some more text.</paragraph>"""
 
+NO_TITLE_PAGE = """\
+Just text, no title."""
+
+NO_TITLE_DOCTREE = """\
+Just text, no title."""
+
 
 class CheckSources(SourcesBuilder):
     """ Template for testing some pages
@@ -56,14 +62,20 @@ class CheckSources(SourcesBuilder):
 class TestAPage(CheckSources):
 
     rst_sources = dict(a_page=A_PAGE)
+    expected_doctree = A_DOCTREE
 
-    def test_a_page(self):
-        self.check_page('a_page', A_DOCTREE)
+    def test_page(self):
+        page_name = list(self.rst_sources)[0]
+        self.check_page(page_name, self.expected_doctree)
 
 
-class TestBPage(CheckSources):
+class TestBPage(TestAPage):
 
     rst_sources = dict(b_page=B_PAGE)
+    expected_doctree = B_DOCTREE
 
-    def test_b_page(self):
-        self.check_page('b_page', B_DOCTREE)
+
+class TestNoTitlePage(TestAPage):
+
+    rst_sources = dict(no_title_page=NO_TITLE_PAGE)
+    expected_doctree = NO_TITLE_DOCTREE

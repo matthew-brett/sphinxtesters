@@ -256,16 +256,12 @@ class SourcesBuilder(PageBuilder):
                 os.makedirs(page_dir)
             page_path = pjoin(page_dir, page_base + '.rst')
             with open(page_path, 'wt') as fobj:
+                # Avoid warning (-> error) when page not included in toctree
+                fobj.write(":orphan:\n\n")
                 fobj.write(page_content)
-        # Add pages to toctree to avoid sphinx warning -> error
-        indent = ' ' * 4
-        page_list = ("\n" + indent).join(cls.rst_sources)
-        page_text = "\n\n.. toctree::\n{}:hidden:\n\n{}{}\n\n".format(
-                indent,
-                indent,
-                page_list)
+        # Write blank contents.rst
         with open(pjoin(cls.page_source, 'contents.rst'), 'wt') as fobj:
-            fobj.write(page_text)
+            fobj.write('\n')
 
 
 class ModifiedPageBuilder(PageBuilder):
