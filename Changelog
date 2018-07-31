@@ -2,6 +2,21 @@
 Sphinxtestsers Changelog
 ########################
 
+***
+0.2
+***
+
+Feature release.
+
+* Refactor to make ``SourcesBuilder`` the default class for builds from
+  template and via strings.
+* work round changes in Sphinx warnings for files not in toctree.  By default
+  string-based pages are ignored for the toctree, and we do not put any pages
+  into the toctree by default.  Use new ``toctree_pages`` class attribute to
+  put pages into the toctree.
+* Allow master documents other than ``contents.rst`` by reading ``conf.py``
+  for the ``master_doc`` variable.
+
 *****
 0.1.1
 *****
