@@ -8,6 +8,70 @@ Sphinxtesters - utilities for testing Sphinx extensions
 Quickstart
 **********
 
+If you have a directory containing a sphinx project, test that it builds with
+something like:
+
+.. code:: python
+
+    class TestMyProject(SourcesBuilder):
+
+        page_source_template = 'path/to/sphinx_dir'
+
+        def test_basic_build(self):
+            # Get doctree for page "a_page.rst"
+            doctree = self.get_doctree('a_page')
+            # Assert stuff about doctree version of page
+            html = self.get_built_file('a_page.html')
+            # Assert stuff about html version of page
+
+You can try adding other page content by using the ``rst_sources`` dictionary:
+
+.. code:: python
+
+    class TestChangedProject(SourcesBuilder):
+
+        page_source_template = 'path/to/sphinx_dir'
+        rst_sources = {'a_page': """Replacement text for page""",
+                       'b_page': """An entirely new page"""}
+
+        def test_basic_build(self):
+            a_doctree = self.get_doctree('a_page')
+            b_doctree = self.get_doctree('b_page')
+            # Your tests for the new page content here
+
+Set the text of the ``conf.py`` file with the ``conf_source`` attribute:
+
+.. code:: python
+
+    class TestConfeddProject(SourcesBuilder):
+
+        page_source_template = 'path/to/sphinx_dir'
+        rst_sources = {'a_page': """Replacement text for page""",
+                       'b_page': """An entirely new page"""}
+        conf_source = """ # This overwrites existing conf.py """
+
+        def test_basic_build(self):
+            a_doctree = self.get_doctree('a_page')
+            b_doctree = self.get_doctree('b_page')
+            # Your tests for the new page content here
+
+You don't need to set ``page_source_template``; if you don't, you start with a
+fresh project, where the only pages are the ones you specify in
+``rst_sources``.
+
+.. code:: python
+
+    class TestFreshProject(SourcesBuilder):
+
+        rst_sources = {'a_page': """A new page""",
+                       'b_page': """Another new page"""}
+        conf_source = """ # Stuff for the conf.py file """
+
+        def test_basic_build(self):
+            a_doctree = self.get_doctree('a_page')
+            b_doctree = self.get_doctree('b_page')
+            # Your tests for the new page content here
+
 See the tests for examples of using Sphinxtesters for testing builds of Sphinx
 projects.
 
