@@ -12,13 +12,6 @@ import pytest
 HERE = dirname(__file__)
 PROJ1 = pjoin(HERE, 'proj1')
 
-NEW_PAGE = u"""
-Fancy title
-+++++++++++
-
-Compelling text
-"""
-
 
 class TestModifiedPageBuilder(ModifiedPageBuilder):
     # Replace page with file-like object

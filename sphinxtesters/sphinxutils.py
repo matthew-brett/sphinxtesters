@@ -3,12 +3,13 @@
 
 import sys
 import os
-from os.path import join as pjoin, isdir, split as psplit
+from os.path import join as pjoin, isdir, split as psplit, isfile
 import shutil
 from contextlib import contextmanager
 from copy import copy
 from tempfile import mkdtemp
 import pickle
+import warnings
 
 from docutils import nodes
 
@@ -21,6 +22,17 @@ fresh_roles = copy(roles._roles)
 fresh_directives = copy(directives._directives)
 fresh_visitor_dict = nodes.GenericNodeVisitor.__dict__.copy()
 fresh_std_domain_init_labels = StandardDomain.initial_data['labels'].copy()
+
+@contextmanager
+def in_dir(path):
+    """ Change into directory for duration of context
+    """
+    cwd = os.getcwd()
+    try:
+        os.chdir(path)
+        yield
+    finally:
+        os.chdir(cwd)
 
 
 def reset_class(cls, original_dict):
@@ -110,7 +122,6 @@ class TempApp(TestApp):
                              status=status,
                              warningiserror=warningiserror)
 
-
     def cleanup(self):
         if self.tmp_dir is None:
             return
@@ -127,10 +138,19 @@ class TempApp(TestApp):
 
 
 class PageBuilder(object):
-    """ Nose test class to build sphinx pages in temporary directory
+    """ Test class to build sphinx pages in temporary directory
 
-    When child class has a name Nose recognizes as a test class, Nose will call
-    ``setup_class``, which will build
+    When child class has a name Pytest recognizes as a test class, Pytest will
+    call :meth:`setup_class`.  In this class method, :meth:`set_page_source`
+    copies / makes / manipulates the source pages.  It likely calls
+    :meth:`modify_source` at the end, allowing you to hook in any other
+    modifications.  :meth:`setup_class` then initializes the Sphinx applicaton
+    object, and builds the pages, using :meth:`build_source`.
+
+    The default behavior is to initialize the source directory by copying from
+    a template directory specified in ``page_source_template``.  This can be
+    None, to start with an empty source directory, before modifications by
+    :meth:`modify_source`.
     """
 
     # If True, assert that the build raised an error
@@ -138,6 +158,10 @@ class PageBuilder(object):
 
     # Builder
     builder = 'html'
+
+    # Set to path containing any original sources that we copy to initialize
+    # the source directory.  Can be None (no pages copied).
+    page_source_template = None
 
     @classmethod
     def setup_class(cls):
@@ -162,6 +186,22 @@ class PageBuilder(object):
         cls.build_source()
 
     @classmethod
+    def set_page_source(cls):
+        """ Set directory containing page sources, maybe modify source.
+        """
+        cls.page_source = pjoin(cls.build_path, 'source')
+        if cls.page_source_template:
+            shutil.copytree(cls.page_source_template, cls.page_source)
+        else:
+            os.mkdir(cls.page_source)
+        cls.modify_source()
+
+    @classmethod
+    def modify_source(cls):
+        """ Override to modify sources before initial build
+        """
+
+    @classmethod
     def build_source(cls):
         try:  # Catch exceptions during sphinx build
             cls.build_app.build(False, [])
@@ -176,19 +216,6 @@ class PageBuilder(object):
         shutil.rmtree(cls.build_path)
         raise RuntimeError('page build failed with build error {}'
                            .format(cls.build_error))
-
-    @classmethod
-    def set_page_source(cls):
-        """ Set directory containing page sources, maybe modify source
-        """
-        cls.page_source = pjoin(cls.build_path, 'source')
-        os.mkdir(cls.page_source)
-        cls.modify_source()
-
-    @classmethod
-    def modify_source(cls):
-        """ Override to modify sources before initial build
-        """
 
     def get_doctree(self, name):
         """ Return doctree given by `name` from pickle in doctree file """
@@ -227,6 +254,12 @@ class PageBuilder(object):
         assert self.should_error == (self.build_error is not None)
 
     @classmethod
+    def append_conf(cls, string):
+        """ Append stuff to the conf.py file """
+        with open(pjoin(cls.page_source, 'conf.py'), 'a') as fobj:
+            fobj.write(string)
+
+    @classmethod
     def teardown_class(cls):
         if isdir(cls.build_path):
             shutil.rmtree(cls.build_path)
@@ -234,6 +267,10 @@ class PageBuilder(object):
 
 class SourcesBuilder(PageBuilder):
     """ Build pages with text in class attribute ``rst_sources``.
+
+    Class that stores page names, page contents as key, value pairs in the
+    ``rst_sources`` class attribute.  ``conf.py`` contents can go in the
+    ``conf_source`` class attribute.
     """
 
     # rst_sources is a dict with key, value pairs, where the keys are the page
@@ -241,12 +278,29 @@ class SourcesBuilder(PageBuilder):
     # running on.  ``.rst`` extension assumed (do not add it).  The values are
     # strings giving the page contents.
     rst_sources = dict()
+
+    # Contents for conf.py.  Can be empty to use existing contents.  If not
+    # empty, then contents overwrites any existing conf.py file.
     conf_source = ''
+
+    # Pages to be listed in the master document toctree
+    toctree_pages = []
+
+    @classmethod
+    def _touch(cls, fname):
+        if isfile(fname):
+            return
+        with open(fname, 'wt') as fobj:
+            fobj.write('')
 
     @classmethod
     def modify_source(cls):
-        with open(pjoin(cls.page_source, 'conf.py'), 'wt') as fobj:
-            fobj.write(cls.conf_source)
+        conf_fname = pjoin(cls.page_source, 'conf.py')
+        if cls.conf_source:
+            with open(conf_fname, 'wt') as fobj:
+                fobj.write(cls.conf_source)
+        else:
+            cls._touch(conf_fname)
         for page_root, page_content in cls.rst_sources.items():
             # page root may contain directories
             page_root = page_root.replace('/', os.path.sep)
@@ -259,37 +313,57 @@ class SourcesBuilder(PageBuilder):
                 # Avoid warning (-> error) when page not included in toctree
                 fobj.write(":orphan:\n\n")
                 fobj.write(page_content)
-        # Write blank contents.rst
-        with open(pjoin(cls.page_source, 'contents.rst'), 'wt') as fobj:
-            fobj.write('\n')
+        master_fname = cls._get_master()
+        # Always write blank master document, if not already present.
+        cls._touch(master_fname)
+        # Write toctree to master doc, if needed
+        cls.write_toctree(cls.toctree_pages, master_fname)
+
+    @classmethod
+    def get_conf_vars(cls, force=False):
+        vars = {}
+        with in_dir(cls.page_source):
+            with open('conf.py', 'rt') as fobj:
+                conf = fobj.read()
+            exec(conf, {}, vars)
+        return vars
+
+    @classmethod
+    def _get_master(cls):
+        """ Return filename of master page for project """
+        master_doc = cls.get_conf_vars().get('master_doc', 'contents')
+        return pjoin(cls.page_source, master_doc + '.rst')
+
+    @classmethod
+    def write_toctree(cls, page_list, master_fname=None):
+        """ Write toctree directive for given page list
+        """
+        if len(page_list) == 0:
+            return
+        if master_fname is None:
+            master_fname = cls._get_master()
+        with open(master_fname, 'at') as fobj:
+            fobj.write("\n\n.. toctree::\n\n    {0}\n\n".format(
+                '\n'.join(page_list)))
 
 
 class ModifiedPageBuilder(PageBuilder):
-    """ Copy existing pages into temporary directory and modify before build.
+    """ Add utilities for changing pages from template.
 
-    This allows us to make new build configurations and pages in the test
-    functions rather than having multiple sphinx project subdirectories in the
-    test tree.
+    This class now deprecated, please use PageBuilder instead.
     """
-    # set to path containing original sources (not modified)
-    page_source_template = None
 
     # Default page.  Should specify a path-less page name that can be replaced
     # in modified builds.
     default_page = None
 
     @classmethod
-    def set_page_source(cls):
-        """ Copy the source to a temporary directory, maybe modify """
-        cls.page_source = pjoin(cls.build_path, 'source')
-        shutil.copytree(cls.page_source_template, cls.page_source)
-        cls.modify_source()
-
-    @classmethod
-    def append_conf(cls, string):
-        """ Append stuff to the conf.py file """
-        with open(pjoin(cls.page_source, 'conf.py'), 'a') as fobj:
-            fobj.write(string)
+    def setup_class(cls):
+        warnings.warn('ModifedPageBuilder deprecated, please '
+                      'use PageBuilder instead',
+                      DeprecationWarning,
+                      stacklevel=2)
+        super(ModifiedPageBuilder, cls).setup_class()
 
     @classmethod
     def replace_page(cls, file_like):

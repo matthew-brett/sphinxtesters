@@ -1,9 +1,14 @@
 """ Tests for SourcesBuilder utility
 """
 
-from os.path import (join as pjoin, isdir, exists)
+from os.path import (join as pjoin, isdir, exists, dirname)
 
 from sphinxtesters import SourcesBuilder
+
+import pytest
+
+HERE = dirname(__file__)
+PROJ1 = pjoin(HERE, 'proj1')
 
 A_PAGE = """\
 #########
@@ -79,3 +84,87 @@ class TestNoTitlePage(TestAPage):
 
     rst_sources = dict(no_title_page=NO_TITLE_PAGE)
     expected_doctree = NO_TITLE_DOCTREE
+
+
+class TestTemplateSourcesBuilder(SourcesBuilder):
+    # Replace page using rst_sources
+
+    page_source_template = PROJ1
+    rst_sources = {'a_page': u"""
+Fancy title
++++++++++++
+
+Compelling text
+"""}
+
+    def test_a_build(self):
+        doctree = self.get_doctree('a_page')
+        doctree_str = self.doctree2str(doctree)
+        expected = (
+            '<title>Fancy title</title>\n'
+            '<paragraph>Compelling text</paragraph>')
+        assert doctree_str == expected
+
+
+def test_bad_souurcesbuilder_with_template():
+    """ Tests that warning on build generates error
+    """
+
+    class TestBadSourcesBuilder(TestTemplateSourcesBuilder):
+
+        rst_sources = {'a_page': u"""
+Fancy title
++++++++++++
+
+:ref:`not-a-target`
+"""}
+
+    with pytest.raises(RuntimeError):
+        TestBadSourcesBuilder.setup_class()
+
+
+class TestAppendConf(TestTemplateSourcesBuilder):
+    # Test append_conf method
+
+    @classmethod
+    def modify_source(cls):
+        super(TestAppendConf, cls).modify_source()
+        cls.append_conf('# Spurious comment')
+
+    def test_append_conf(self):
+        with open(pjoin(PROJ1, 'conf.py'), 'rt') as fobj:
+            before_contents = fobj.read()
+        with open(pjoin(self.page_source, 'conf.py'), 'rt') as fobj:
+            after_contents = fobj.read()
+        assert (after_contents == before_contents + '# Spurious comment')
+
+
+class TestNoTocTree(SourcesBuilder):
+    # Test no toctree write
+    rst_sources = dict(a_page=A_PAGE)
+
+    def test_master(self):
+        doctree = self.get_doctree('contents')
+        assert doctree.document.astext() == ''
+        assert len(doctree.document.children) == 0
+
+
+class TestTocTree(TestNoTocTree):
+    # Test toctree write to master_doc
+
+    toctree_pages = ['a_page']
+    master_name = 'contents'
+
+    def test_master(self):
+        doctree = self.get_doctree(self.master_name)
+        assert len(doctree.document.children) == 1
+        toctree = doctree.document.children[0]
+        entries = toctree[0]['entries']
+        assert entries == [(None, 'a_page')]
+
+
+class TestFooTocTree(TestTocTree):
+    # Test toctree write to another master_doc
+
+    conf_source = 'master_doc = "foo"'
+    master_name = 'foo'
