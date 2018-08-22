@@ -114,11 +114,12 @@ class TempApp(TestApp):
         self._set_cache()
         with self.own_namespace():
             TestApp.__init__(self,
-                             tmp_dir,
-                             tmp_dir,
-                             tmp_dir,
-                             tmp_dir,
-                             buildername,
+                             srcdir=tmp_dir,
+                             confdir=tmp_dir,
+                             # Sphinx 1.8.0b1 does not allow srcdir==outdir
+                             outdir=pjoin(tmp_dir, 'build'),
+                             doctreedir=tmp_dir,
+                             buildername=buildername,
                              status=status,
                              warningiserror=warningiserror)
 

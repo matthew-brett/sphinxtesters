@@ -3,7 +3,7 @@
 
 from os.path import (dirname, join as pjoin, isdir, isfile)
 
-from sphinx.errors import ConfigError
+from sphinx.errors import ConfigError, ApplicationError
 
 from sphinxtesters.sphinxutils import PageBuilder
 
@@ -76,7 +76,8 @@ def test_bad_pagebuilder():
             cls.page_source = HERE
 
     # ConfigError as of Sphinx 1.6.6
-    with pytest.raises((IOError, ConfigError)):
+    # ApplicationError as of 1.8.0b1
+    with pytest.raises((IOError, ConfigError, ApplicationError)):
         TestBadPageBuilder.setup_class()
 
 
