@@ -2,6 +2,17 @@
 Sphinxtestsers Changelog
 ########################
 
+*****
+0.2.1
+*****
+
+Bugfix release
+
+* Refactor against upcoming Sphinx 1.8 release.  The only obvious change is
+  that ``TempApp`` now builds into a ``build`` subdirectory, to avoid a new
+  Sphinx error for applications that have the same source and build
+  directories.
+
 ***
 0.2
 ***
