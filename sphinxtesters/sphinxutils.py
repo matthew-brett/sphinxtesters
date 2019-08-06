@@ -21,7 +21,6 @@ from sphinx.domains.std import StandardDomain
 
 fresh_roles = copy(roles._roles)
 fresh_directives = copy(directives._directives)
-fresh_visitor_dict = nodes.GenericNodeVisitor.__dict__.copy()
 fresh_std_domain_init_labels = StandardDomain.initial_data['labels'].copy()
 
 @contextmanager
@@ -36,12 +35,22 @@ def in_dir(path):
         os.chdir(cwd)
 
 
-def reset_class(cls, original_dict):
-    for key in list(cls.__dict__):
-        if key not in original_dict:
-            delattr(cls, key)
-        else:
-            setattr(cls, key, original_dict[key])
+
+def _visit_depart_attrs(cls):
+    return [attr for attr in dir(cls)
+            if attr.startswith('visit_') or attr.startswith('depart_')]
+
+
+def _get_visit_depart(cls):
+    return {attr: getattr(cls, attr) for attr in _visit_depart_attrs(cls)}
+
+
+def _set_visit_depart(cls, to_set):
+    for attr in _visit_depart_attrs(cls):
+        if attr not in to_set:
+            delattr(cls, attr)
+    for attr, method in to_set.items():
+        setattr(cls, attr, method)
 
 
 class TestApp(Sphinx):
@@ -58,9 +67,8 @@ class TestApp(Sphinx):
         self._global_cache = dict(
             directives=copy(fresh_directives),
             roles=copy(fresh_roles),
-            visitor_dict = copy(fresh_visitor_dict),
+            visit_depart = _get_visit_depart(nodes.GenericNodeVisitor),
             std_domain_init_labels = copy(fresh_std_domain_init_labels))
-
 
     @contextmanager
     def own_namespace(self):
@@ -68,11 +76,12 @@ class TestApp(Sphinx):
         cache = self._global_cache
         _directives = directives._directives
         _roles = roles._roles
-        _visitor_dict = nodes.GenericNodeVisitor.__dict__.copy()
+        GNV = nodes.GenericNodeVisitor
+        _visit_depart = _get_visit_depart(GNV)
         _std_domain_init_labels = StandardDomain.initial_data['labels']
         directives._directives = cache['directives']
         roles._roles = cache['roles']
-        reset_class(nodes.GenericNodeVisitor, cache['visitor_dict'])
+        _set_visit_depart(GNV, cache['visit_depart'])
         StandardDomain.initial_data['labels'] = cache['std_domain_init_labels']
         try:
             yield
@@ -80,7 +89,8 @@ class TestApp(Sphinx):
             # Reset docutils, Sphinx global state
             directives._directives = _directives
             roles._roles = _roles
-            reset_class(nodes.GenericNodeVisitor, _visitor_dict)
+            cache['visit_depart'] = _get_visit_depart(GNV)
+            _set_visit_depart(GNV, _visit_depart)
             StandardDomain.initial_data['labels'] = _std_domain_init_labels
 
     def build(self, *args, **kwargs):
