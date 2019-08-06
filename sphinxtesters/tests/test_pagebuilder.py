@@ -22,14 +22,16 @@ class TestPageBuilder(PageBuilder):
     def modify_source(cls):
         # Make an empty conf.py and contents.rst file with text
         cls.append_conf('')
-        with open(pjoin(cls.page_source, 'contents.rst'), 'wt') as fobj:
+        index_fname = pjoin(cls.page_source, cls.index_root + '.rst')
+        with open(index_fname, 'wt') as fobj:
             fobj.write('some text')
 
     def test_build(self):
         assert isdir(self.out_dir)
         assert isdir(self.doctree_dir)
-        assert isfile(pjoin(self.out_dir, 'contents.html'))
-        doctree = self.get_doctree('contents')
+        index_fname = pjoin(self.out_dir, self.index_root + '.html')
+        assert isfile(index_fname)
+        doctree = self.get_doctree(self.index_root)
         assert doctree.document.astext() == 'some text'
 
 
@@ -43,7 +45,8 @@ class TestMaster(PageBuilder):
             fobj.write('more text')
 
     def test_build(self):
-        assert not isfile(pjoin(self.out_dir, 'contents.html'))
+        index_fname = pjoin(self.out_dir, self.index_root + '.html')
+        assert not isfile(index_fname)
         assert isfile(pjoin(self.out_dir, 'foo.html'))
         doctree = self.get_doctree('foo')
         assert doctree.document.astext() == 'more text'

@@ -17,7 +17,8 @@ def test_tempapp():
     app = TempApp(rst_txt)
     app.build()
     app_path = app.tmp_dir
-    assert_contents_equal(pjoin(app_path, 'contents.rst'), rst_txt)
+    index_fname = pjoin(app_path, app.index_root + '.rst')
+    assert_contents_equal(index_fname, rst_txt)
     assert_contents_equal(pjoin(app_path, 'conf.py'), '')
     app.cleanup()
     assert not isdir(app_path)

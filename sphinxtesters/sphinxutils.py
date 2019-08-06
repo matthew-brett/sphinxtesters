@@ -15,6 +15,7 @@ from docutils import nodes
 
 from docutils.parsers.rst import directives, roles
 
+import sphinx
 from sphinx.application import Sphinx
 from sphinx.domains.std import StandardDomain
 
@@ -44,6 +45,9 @@ def reset_class(cls, original_dict):
 
 
 class TestApp(Sphinx):
+
+    # Default index filename.
+    index_root = ('contents' if sphinx.version_info[0] < 2 else 'index')
 
     def __init__(self, *args, **kwargs):
         self._set_cache()
@@ -109,7 +113,7 @@ class TempApp(TestApp):
         self.tmp_dir = tmp_dir = mkdtemp()
         with open(pjoin(tmp_dir, 'conf.py'), 'wt') as fobj:
             fobj.write(conf_text)
-        with open(pjoin(tmp_dir, 'contents.rst'), 'wt') as fobj:
+        with open(pjoin(tmp_dir, self.index_root + '.rst'), 'wt') as fobj:
             fobj.write(rst_text)
         self._set_cache()
         with self.own_namespace():
@@ -163,6 +167,9 @@ class PageBuilder(object):
     # Set to path containing any original sources that we copy to initialize
     # the source directory.  Can be None (no pages copied).
     page_source_template = None
+
+    # Name of default contents file (depends on Sphinx version)
+    index_root = TestApp.index_root
 
     @classmethod
     def setup_class(cls):
@@ -332,7 +339,7 @@ class SourcesBuilder(PageBuilder):
     @classmethod
     def _get_master(cls):
         """ Return filename of master page for project """
-        master_doc = cls.get_conf_vars().get('master_doc', 'contents')
+        master_doc = cls.get_conf_vars().get('master_doc', cls.index_root)
         return pjoin(cls.page_source, master_doc + '.rst')
 
     @classmethod

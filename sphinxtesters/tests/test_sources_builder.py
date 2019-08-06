@@ -52,7 +52,8 @@ class CheckSources(SourcesBuilder):
     def test_structure(self):
         assert isdir(self.out_dir)
         assert isdir(self.doctree_dir)
-        assert exists(pjoin(self.doctree_dir, 'contents.doctree'))
+        index_fname = pjoin(self.doctree_dir, self.index_root + '.doctree')
+        assert exists(index_fname)
         for page_name in self.rst_sources:
             assert exists(pjoin(self.doctree_dir,
                                 page_name + '.doctree'))
@@ -144,7 +145,7 @@ class TestNoTocTree(SourcesBuilder):
     rst_sources = dict(a_page=A_PAGE)
 
     def test_master(self):
-        doctree = self.get_doctree('contents')
+        doctree = self.get_doctree(self.index_root)
         assert doctree.document.astext() == ''
         assert len(doctree.document.children) == 0
 
@@ -153,7 +154,7 @@ class TestTocTree(TestNoTocTree):
     # Test toctree write to master_doc
 
     toctree_pages = ['a_page']
-    master_name = 'contents'
+    master_name = TestNoTocTree.index_root
 
     def test_master(self):
         doctree = self.get_doctree(self.master_name)
