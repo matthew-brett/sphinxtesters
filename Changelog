@@ -3,6 +3,16 @@ Sphinxtestsers Changelog
 ########################
 
 *****
+0.2.2
+*****
+
+Bugfix release
+
+* Refactor against Sphinx 2.0 release.  Technically this results in an API
+  change, because I removed the `reset_class` function from `sphinxutils`.
+  Sorry about that.
+
+*****
 0.2.1
 *****
 
