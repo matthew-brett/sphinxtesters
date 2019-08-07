@@ -64,6 +64,8 @@ class TestApp(Sphinx):
             super(TestApp, self).__init__(*args, **kwargs)
 
     def _set_cache(self):
+        """ Initialize namespace from current state of docutils objects
+        """
         self._global_cache = dict(
             directives=copy(fresh_directives),
             roles=copy(fresh_roles),
@@ -72,7 +74,19 @@ class TestApp(Sphinx):
 
     @contextmanager
     def own_namespace(self):
-        """ Set docutils namespace for builds """
+        """ Set docutils namespace for builds
+
+        Sphinx uses global docutils objects.  We need to isolate the effects of
+        this sphinx application from others.
+
+        * Store current state of docutils objects.
+        * Take stored state of these objects from cache attached to `self` and
+          put into docutils.
+        * Yield to user of context manager.
+        * Make sure any changes in state during yield go back into cache for
+          future use by `self`.
+        * Restore initial state of docutils objects.
+        """
         cache = self._global_cache
         _directives = directives._directives
         _roles = roles._roles
@@ -123,8 +137,13 @@ class TempApp(TestApp):
         self.tmp_dir = tmp_dir = mkdtemp()
         with open(pjoin(tmp_dir, 'conf.py'), 'wt') as fobj:
             fobj.write(conf_text)
-        with open(pjoin(tmp_dir, self.index_root + '.rst'), 'wt') as fobj:
+        # Write given RST text to master document.
+        config = {}
+        exec(conf_text, {}, config)
+        master_doc = config.get('master_doc', self.index_root)
+        with open(pjoin(tmp_dir, master_doc + '.rst'), 'wt') as fobj:
             fobj.write(rst_text)
+        # Initialize cache of docutils global vars.
         self._set_cache()
         with self.own_namespace():
             TestApp.__init__(self,
