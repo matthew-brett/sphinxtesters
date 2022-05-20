@@ -3,10 +3,11 @@
 
 from os.path import (dirname, join as pjoin, isdir, isfile)
 
+from sphinx.errors import ConfigError
 try:  # Sphinx 1.8.0b1
-    from sphinx.errors import ApplicationError as NoConfigError
+    from sphinx.errors import ApplicationError as AppError
 except ImportError:
-    from sphinx.errors import ConfigError as NoConfigError
+    AppError = ConfigError
 
 from sphinxtesters.sphinxutils import PageBuilder
 
@@ -84,7 +85,7 @@ def test_bad_pagebuilder():
     # ConfigError as of Sphinx 1.6.6
     # ApplicationError as of 1.8.0b1
     # See imports.
-    with pytest.raises((IOError, NoConfigError)):
+    with pytest.raises((IOError, ConfigError, AppError)):
         TestBadPageBuilder.setup_class()
 
 
