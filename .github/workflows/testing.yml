@@ -32,10 +32,10 @@ jobs:
         run: |
           mkdir tmp
           cd tmp
-          pytest --pyargs sphinxtesters
+          pytest --log-level DEBUG --cov-config=../.coveragerc --cov=sphinxtesters --doctest-modules --pyargs sphinxtesters
       - name: Collect code coverage data
         run: |
-          coverage xml
+          coverage xml --data-file=tmp/.coverage
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v2
         with:
