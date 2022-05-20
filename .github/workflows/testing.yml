@@ -24,7 +24,7 @@ jobs:
           pip install -r test-requirements.txt
       - name: Install coverage dependencies
         run: |
-          pytest pytest-cov
+          pip install pytest-cov
       - name: Install package
         run: |
           pip install .
