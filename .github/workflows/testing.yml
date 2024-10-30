@@ -27,10 +27,10 @@ jobs:
           pip install pytest-cov
       - name: Run tests
         run: |
-          pytest --log-level DEBUG --cov-config=.coveragerc --cov=sphinxtesters --doctest-modules
+          pytest --log-level DEBUG --cov-config=.coveragerc --cov=sphinxtesters --doctest-modules sphinxtesters
       - name: Collect code coverage data
         run: |
-          coverage xml --data-file=tmp/.coverage
+          coverage xml --data-file=.coverage
       # Go to:
       # https://app.codecov.io/gh/matthew-brett/sphinxtesters/config/general
       # Copy uuid for CODECOV_TOKEN
