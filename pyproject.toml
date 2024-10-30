@@ -4,9 +4,9 @@ build-backend = "flit_core.buildapi"
 
 [project]
 name = "sphinxtesters"
-author = "Matthew Brett"
-author-email = "matthew.brett@gmail.com"
-home-page="https://github.com/matthew-brett/sphinxtesters"
+authors = [
+    {name = "Matthew Brett", email = "matthew.brett@gmail.com"}
+]
 classifiers = [
     'Development Status :: 3 - Alpha',
     'Environment :: Console',
