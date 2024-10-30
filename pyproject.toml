@@ -1,0 +1,44 @@
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "sphinxtesters"
+author = "Matthew Brett"
+author-email = "matthew.brett@gmail.com"
+home-page="https://github.com/matthew-brett/sphinxtesters"
+classifiers = [
+    'Development Status :: 3 - Alpha',
+    'Environment :: Console',
+    'Intended Audience :: Developers',
+    'Intended Audience :: Science/Research',
+    'License :: OSI Approved :: BSD License',
+    'Programming Language :: Python',
+    'Programming Language :: Python :: 3',
+    'Topic :: Scientific/Engineering',
+    'Operating System :: Microsoft :: Windows',
+    'Operating System :: POSIX',
+    'Operating System :: Unix',
+    'Operating System :: MacOS',
+]
+readme = "README.rst"
+dynamic = ["version", "description"]
+# Check against requirements.txt
+dependencies = [
+    'sphinx>=1.4',
+]
+requires-python = ">=3.8"
+
+[project.urls]
+Home = "https://github.com/matthew-brett/sphinxtesters"
+Documentation = "https://github.com/matthew-brett/sphinxtesters"
+Source = "https://github.com/matthew-brett/sphinxtesters"
+
+[project.optional-dependencies]
+test = [
+    'pytest'
+]
+doc = [
+    'ghp-import',
+    'numpydoc'
+    ]
