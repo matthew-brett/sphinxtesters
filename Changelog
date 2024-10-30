@@ -3,6 +3,16 @@ Sphinxtestsers Changelog
 ########################
 
 *****
+0.2.4
+*****
+
+Bugfix release : 30 October 2024
+
+* Move to ``flit`` for build, remove versioneer.  This fixes the build failure
+  for Python 3.12 and up.
+* Testing fix for change in Sphinx imports when testing pagebuilder.
+
+*****
 0.2.3
 *****
 

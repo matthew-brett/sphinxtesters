@@ -27,25 +27,10 @@ Releasing sphinxtesters
 
   because this will be the output used by PyPi_
 
-* Check `sphinxtesters travis-ci`_.
+* Check Github Actions are passing.
 
-* Once everything looks good, you are ready to upload the source release to
-  PyPi.  See `setuptools intro`_.  Make sure you have a file
-  ``\$HOME/.pypirc``, of form::
-
-    [distutils]
-    index-servers =
-        pypi
-
-    [pypi]
-    repository: https://upload.pypi.io/legacy/
-    username:your.pypi.username
-    password:your-password
-
-* Once everything looks good, tag the release.  This will also set the version
-  (we are using versioneer_ to manage versions via git tags)::
-
-    git tag -s 0.3
+* Update the version in ``sphinxtesters/__init__.py`` to release version.  Add
+  and commit.
 
 * Clean::
 
@@ -56,18 +41,25 @@ Releasing sphinxtesters
 
 * When ready::
 
-    python setup.py sdist --formats=zip
-    # -s flag to sign the release
-    twine upload -s dist/sphinxtesters*zip
+    pip install twine build
+    python -m build --sdist
+    twine upload dist/sphinxtesters*tar.gz
 
 * Upload the release commit and tag to github::
 
     git push
     git push --tags
 
-* Push the docs to github pages with::
+* Once everything looks good, tag the release::
 
-    cd doc
-    make github
+    git tag -s 0.2.4
+
+* Update the version in ``sphinxtesters/__init__.py`` to reflect this is a
+  development version.  Add and commit.
+
+* Push current branch and tags::
+
+    git push
+    git push --tags
 
 .. include:: ../links_names.inc
