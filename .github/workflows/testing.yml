@@ -9,34 +9,37 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: [3.7, 3.8, 3.9, "3.10"]
+        python-version: [3.8, 3.9, "3.10", "3.11", "3.12", "3.12"]
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: true
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install main test dependencies
         run: |
-          pip install -r test-requirements.txt
+          pip install ".[test]"
       - name: Install coverage dependencies
         run: |
           pip install pytest-cov
-      - name: Install package
-        run: |
-          pip install .
       - name: Run tests
         run: |
-          mkdir tmp
-          cd tmp
-          pytest --log-level DEBUG --cov-config=../.coveragerc --cov=sphinxtesters --doctest-modules --pyargs sphinxtesters
+          pytest --log-level DEBUG --cov-config=.coveragerc --cov=sphinxtesters --doctest-modules
       - name: Collect code coverage data
         run: |
           coverage xml --data-file=tmp/.coverage
+      # Go to:
+      # https://app.codecov.io/gh/matthew-brett/sphinxtesters/config/general
+      # Copy uuid for CODECOV_TOKEN
+      # Add as repository secret with name CODECOV_TOKEN at:
+      # https://github.com/matthew-brett/sphinxtesters/settings/secrets/actions
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           fail_ci_if_error: true
+          files: .coverage
+        env:
+          CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
